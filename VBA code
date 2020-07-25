@@ -1,0 +1,87 @@
+Sub stockmarket():
+
+Dim ws As Worksheet
+
+    'name columns and cells
+    For Each ws In ThisWorkbook.Worksheets
+    ws.Cells(1, 9).Value = "Ticker"
+    ws.Cells(1, 10).Value = "Yearly Change"
+    ws.Cells(1, 11).Value = "Percent Change"
+    ws.Cells(1, 12).Value = "Total Stock Volume"
+    
+    ws.Range("O2").Value = "Greatest % Increase"
+    ws.Range("O3").Value = "Greatest % Decrease"
+    ws.Range("O4").Value = "Greatest Total Volume"
+    ws.Range("P1").Value = "Ticker"
+    ws.Range("Q1").Value = "Value"
+
+    'dim variables
+    Dim tickername As String
+    Dim openPrice, closePrice, priceChange, percentChange, totalVolumn As Double
+
+    'Keep track of each ticker name
+    Dim ticker As Long
+    ticker = 2
+    
+    'set starting points for volumn and openPrice
+    totalVolumn = 0
+    openPrice = ws.Cells(2, 3).Value
+    
+    'loop start from here
+    For i = 2 To ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        'find out new ticker names and start a new entry
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        tickername = ws.Cells(i, 1).Value
+        closePrice = ws.Cells(i, 6).Value
+        
+        'calculate price and percent change and total volumn
+        priceChange = closePrice - openPrice
+            
+            'make sure openPrice is not 0 so there will not be divied by 0 error
+            If openPrice <> 0 Then
+            percentChange = (priceChange / openPrice) * 100
+            Else
+            MsgBox ("Error! Opening price is 0. Cannot calculate Percent Change. (Row " & Str(i) & ", Ticker " & tickername & ")")
+            End If
+            
+         'calculate totalvolumn for same ticker
+            totalVolumn = totalVolumn + ws.Cells(i, 7).Value
+         
+        'print results to summary
+        ws.Cells(ticker, 9).Value = tickername
+        ws.Cells(ticker, 10).Value = priceChange
+        
+            'color priceChange into green or red
+            If priceChange > 0 Then
+                ws.Cells(ticker, 10).Interior.ColorIndex = 4
+            ElseIf priceChange <= 0 Then
+                ws.Cells(ticker, 10).Interior.ColorIndex = 3
+            End If
+            
+        ws.Cells(ticker, 11).Value = (Str(percentChange) & "%")
+        ws.Cells(ticker, 12).Value = totalVolumn
+    
+        'move to next row/ticker
+        ticker = ticker + 1
+        
+        'reset constants
+        priceChange = 0
+        percentChange = 0
+        totalVolumn = 0
+        
+        'set new openPrice
+        openPrice = ws.Cells(i + 1, 3).Value
+        
+        'add total volumn for same ticker name
+        Else
+            totalVolumn = totalVolumn + ws.Cells(i, 7).Value
+        
+        End If
+        
+    Next i
+
+    Next
+
+End Sub
+
