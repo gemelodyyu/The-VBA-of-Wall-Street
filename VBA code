@@ -45,7 +45,7 @@ Dim ws As Worksheet
             MsgBox ("Error! Opening price is 0. Cannot calculate Percent Change. (Row " & Str(i) & ", Ticker " & tickername & ")")
             End If
             
-         'calculate totalvolumn for same ticker
+         'calculate totalvolumn for ticker
             totalVolumn = totalVolumn + ws.Cells(i, 7).Value
          
         'print results to summary
@@ -73,7 +73,7 @@ Dim ws As Worksheet
         'set new openPrice
         openPrice = ws.Cells(i + 1, 3).Value
         
-        'add total volumn for same ticker name
+        'for items under the same ticker name, add volumn together to calculate total volumn
         Else
             totalVolumn = totalVolumn + ws.Cells(i, 7).Value
         
