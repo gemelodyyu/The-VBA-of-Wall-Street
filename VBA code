@@ -4,7 +4,7 @@ Dim ws As Worksheet
 
 For Each ws In ThisWorkbook.Worksheets
 
-                'name new columns and cells
+                'name new columns and rows
                 ws.Cells(1, 9).Value = "Ticker"
                 ws.Cells(1, 9).Font.Bold = True
                 ws.Cells(1, 10).Value = "Yearly Change"
@@ -25,7 +25,7 @@ For Each ws In ThisWorkbook.Worksheets
                 ws.Range("Q1").Value = "Value"
                 ws.Range("Q1").Font.Bold = True
             
-                'dim variables
+                'dim variables for tickers list
                 Dim tickername As String
                 Dim openPrice, closePrice, priceChange, percentChange, totalVolumn As Double
             
@@ -36,96 +36,58 @@ For Each ws In ThisWorkbook.Worksheets
                 Dim tickerRow As Integer
                 tickerRow = 2
                 
-                 'set starting points for volumn and openPrice
+                'set initial value for volumn and openPrice
                 totalVolumn = 0
                 openPrice = ws.Cells(2, 3).Value
                 
     'loop start from here
     For i = 2 To Lastrow
         
-        'when the next ticker name is different from currecnt, start a new entry and do the following calculation
+        'when the next ticker name is different from currecnt, start a new entry on the tickers list and do the following calculation
         If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
-        tickername = ws.Cells(i, 1).Value
-        closePrice = ws.Cells(i, 6).Value
-        
-        'calculate price and percent change and total volumn
-        priceChange = closePrice - openPrice
-        
-            'make sure openPrice is not 0 so there will not be divied by 0 error
-            If openPrice <> 0 Then
-            percentChange = (priceChange / openPrice) * 100
-            Else
-            MsgBox ("Opening price is 0! Cannot calculate Percent Change. (Row " & Str(i) & ", Ticker " & tickername & ")")
-            End If
-        
-        totalVolumn = totalVolumn + ws.Cells(i, 7).Value
-         
-        'write results to summary
-        ws.Cells(tickerRow, 9).Value = tickername
-        ws.Cells(tickerRow, 10).Value = priceChange
-        
-            'color priceChange into green or red
-            If priceChange >= 0 Then
-                ws.Cells(tickerRow, 10).Interior.ColorIndex = 4
-            ElseIf priceChange < 0 Then
-                ws.Cells(tickerRow, 10).Interior.ColorIndex = 3
-            End If
+            tickername = ws.Cells(i, 1).Value
+            closePrice = ws.Cells(i, 6).Value
             
-        ws.Cells(tickerRow, 11).Value = (Str(percentChange) & "%")
-        ws.Cells(tickerRow, 12).Value = totalVolumn
-        
-        'move to next ticker row
-        tickerRow = tickerRow + 1
-        
-        'reset constants
-        priceChange = 0
-        percentChange = 0
-        
-        'set new openPrice
-        openPrice = ws.Cells(i + 1, 3).Value
-        
-        
-                    'find out greatest changes from all tickers
-                    'name new variables
-                    Dim maxPercent, minPercent, maxVolumn As Double
-                    maxPercent = 0
-                    minPercent = 0
-                    maxVolumn = 0
-                    
-                    Dim maxPercentName, minPercentName, maxVolumnName As String
-                    maxPercentName = ""
-                    minPercentName = ""
-                    maxVolumnName = ""
-                    
-                    'compare each change and record the largest or smalest one into variables
-                    If percentChange > maxPercent Then
-                        maxPercent = percentChange
-                        maxPercentName = tickername
-                    ElseIf percentChange < minPercent Then
-                        minPercent = percentChange
-                        minPercentName = tickername
-                    End If
-                    
-                    'same thing for the volumn
-                    If totalVolumn > maxVolumn Then
-                        maxVolumn = totalVolumn
-                        maxVolumnName = tickeranme
-                    End If
-
-                    'write greatest changes results into summary table
-                    ws.Range("P2").Value = maxPercentName
-                    ws.Range("P3").Value = minPercentName
-                    ws.Range("P4").Value = maxVolumnName
-                    ws.Range("Q2").Value = maxPercent
-                    ws.Range("Q3").Value = minPercent
-                    ws.Range("Q4").Value = maxVolumn
-         
-                       
-                    'reset
-                    percentChange = 0
-                    totalVolumn = 0
-                         
-              
+            'calculate price and percent change
+            priceChange = closePrice - openPrice
+            
+                'make sure openPrice is not 0 so there will not be divied by 0 error
+                If openPrice <> 0 Then
+                percentChange = priceChange / openPrice
+                Else
+                percentChange = "N/A"
+                End If
+            
+            'calculate total volumn
+            totalVolumn = totalVolumn + ws.Cells(i, 7).Value
+             
+            'print results
+            ws.Cells(tickerRow, 9).Value = tickername
+            ws.Cells(tickerRow, 10).Value = priceChange
+            
+                'color priceChange into green or red
+                If priceChange >= 0 Then
+                    ws.Cells(tickerRow, 10).Interior.ColorIndex = 4
+                ElseIf priceChange < 0 Then
+                    ws.Cells(tickerRow, 10).Interior.ColorIndex = 3
+                End If
+                
+            ws.Cells(tickerRow, 11).Value = percentChange
+            ws.Cells(tickerRow, 11).NumberFormat = "0.00%"
+            ws.Cells(tickerRow, 12).Value = totalVolumn
+            
+            'move to next ticker row
+            tickerRow = tickerRow + 1
+    
+            'set new openPrice
+            openPrice = ws.Cells(i + 1, 3).Value
+    
+            'reset
+            priceChange = 0
+            percentChange = 0
+            totalVolumn = 0
+                 
+                  
         'when the next ticker name is the same as current one, add up total volumn for same ticker
         Else
             totalVolumn = totalVolumn + ws.Cells(i, 7).Value
@@ -134,7 +96,27 @@ For Each ws In ThisWorkbook.Worksheets
         
     Next i
     
-       
+                'find out greatest changes
+                'start a new loop within the tickers list
+                
+                'fist find out the last row of the tickers list
+                lastRowList = ws.Cells(Rows.Count, 9).End(xlUp).Row
+                
+                For j = 2 To lastRowList
+                    If ws.Cells(j, 11).Value = Application.WorksheetFunction.max(ws.Range("K2:K" & lastRowList)) Then
+                        ws.Cells(2, 16).Value = ws.Cells(j, 9).Value
+                        ws.Cells(2, 17).Value = ws.Cells(j, 11).Value
+                        ws.Cells(2, 17).NumberFormat = "0.00%"
+                    ElseIf ws.Cells(j, 11).Value = Application.WorksheetFunction.min(ws.Range("K2:K" & lastRowList)) Then
+                        ws.Cells(3, 16).Value = ws.Cells(j, 9).Value
+                        ws.Cells(3, 17).Value = ws.Cells(j, 11).Value
+                        ws.Cells(3, 17).NumberFormat = "0.00%"
+                    ElseIf ws.Cells(j, 12).Value = Application.WorksheetFunction.max(ws.Range("L2:L" & lastRowList)) Then
+                        ws.Cells(4, 16).Value = ws.Cells(j, 9).Value
+                        ws.Cells(4, 17).Value = ws.Cells(j, 12).Value
+                    End If
+                Next j
+                            
 Next
 
 End Sub
