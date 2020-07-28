@@ -26,7 +26,8 @@ In this challenge, you will use VBA scripting to analyze real stock market data.
 
     + 2016 result
 
-![alt text](results images/2016 result.png) 
+![alt text](https://github.com/gemelodyyu/VBA-challenge/blob/master/results%20images/2016%20result.png)
+
 
     + 2015 result
 
